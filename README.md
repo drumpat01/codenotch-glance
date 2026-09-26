@@ -16,20 +16,20 @@ It shows whichever AI tools Codenotch tracks for you (Claude, Codex, Cursor, Gro
 1. **Codenotch** installed and showing your usage (macOS or Windows).
 2. **Node.js** LTS from https://nodejs.org.
 3. **Glance** from the App Store; create a free account.
-4. **Download this folder** and copy `config.example.json` to `config.json`.
+4. **Download this repo** (green **Code** button → **Download ZIP**, then unzip) and copy `config.example.json` to `config.json`. Check it can read Codenotch: `node push.mjs --print` in a terminal in the folder should list your AI tools.
 5. **Create the widget(s):** follow [SETUP-PROMPT.md](SETUP-PROMPT.md) (your AI assistant does it with the Glance MCP), then paste the keys it gives you into `config.json`.
 6. **First push:** in a terminal in this folder, `node push.mjs --force`. Then add a **medium** Glance widget to your Home Screen and pick "Codenotch".
 7. **Every hour, automatically:**
    - macOS: `zsh schedule/install-mac.sh`
    - Windows (PowerShell): `powershell -ExecutionPolicy Bypass -File schedule\install-windows.ps1`
 
-`node push.mjs --print` shows what would be sent without sending. Each run adds a line to `push.log`.
+`node push.mjs --print` shows what would be sent without sending (it works before any widget exists). Each run adds a line to `push.log`; problems show as `ERR` lines there.
 
 ## Options (`config.json`)
 
 - `providers`: only these, in Codenotch's names or ids, e.g. `["Claude", "Codex"]`. Empty = everything Codenotch tracks.
 - `hideProviders`: never show these, e.g. `["Grok"]`.
-- `quietHours`: no pushes from `start` to `end` (local 24h clock). Default midnight–6 AM. The free Glance plan allows 24 updates a day per widget; hourly with quiet hours uses 18.
+- `quietHours`: no pushes from `start` to `end` (local 24h clock; `22` to `6` wraps past midnight). Default midnight–6 AM. The free Glance plan allows 24 updates a day per widget; hourly with quiet hours uses 18.
 
 ## Notes
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { content, parseMacArchive, resetText, textBar, toSlots } from '../push.mjs';
+import { content, inQuietHours, parseMacArchive, resetText, textBar, toSlots } from '../push.mjs';
 
 // Shape of Codenotch for macOS's lastGoodReadings archive (Swift JSONEncoder: dates = seconds since 2001-01-01).
 const now = new Date('2026-09-26T12:00:00Z');
@@ -29,7 +29,7 @@ test('slots are ordered, capped, and padded; unknown providers keep their name',
   assert.equal(slots[0].pct, 27);
   assert.equal(slots[2].pct, 100); // clamped
   assert.equal(slots[0].reset, 'resets in 3h');
-  assert.equal(toSlots(parseMacArchive(archive), { hideProviders: [], exclude: ['codex'], now })[1].name, 'Newcomer');
+  assert.equal(toSlots(parseMacArchive(archive), { exclude: ['codex'], now })[1].name, 'Newcomer');
 });
 
 test('content matches each layout', () => {
@@ -43,6 +43,25 @@ test('content matches each layout', () => {
   assert.equal(circles.s5_level, -1); // empty slot hides its circle
   assert.equal(content('bars', slots, now).s2_cells.filter(Boolean).length, 31);
   for (const v of Object.values(free)) assert.notEqual(v, '', 'no empty strings (Glance fields are required)');
+});
+
+test('names: Codenotch display name wins; gemini-api is not Antigravity', () => {
+  const p = [
+    { id: 'claude', displayName: 'Claude', headline: { used: 0.1 } },
+    { id: 'claude-2f9a', displayName: 'Claude (Work)', headline: { used: 0.2 } },
+    { id: 'gemini', displayName: null, headline: { used: 0 } },
+    { id: 'gemini-api', displayName: null, headline: { used: 0 } },
+  ];
+  assert.deepEqual(toSlots(p, { now }).map(s => s.name).slice(0, 4), ['Claude', 'Claude (Work)', 'Antigravity', 'Gemini API']);
+});
+
+test('quiet hours, including past midnight', () => {
+  assert.equal(inQuietHours({ start: 0, end: 6 }, 3), true);
+  assert.equal(inQuietHours({ start: 0, end: 6 }, 6), false);
+  assert.equal(inQuietHours({ start: 22, end: 6 }, 23), true);
+  assert.equal(inQuietHours({ start: 22, end: 6 }, 5), true);
+  assert.equal(inQuietHours({ start: 22, end: 6 }, 12), false);
+  assert.equal(inQuietHours({ start: 0, end: 0 }, 3), false);
 });
 
 test('helpers', () => {

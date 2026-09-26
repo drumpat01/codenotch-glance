@@ -9,8 +9,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const here = path.dirname(decodeURIComponent(new URL(import.meta.url).pathname).replace(/^\/([A-Za-z]:)/, '$1'));
+const here = path.dirname(fileURLToPath(import.meta.url));
 const args = new Set(process.argv.slice(2));
 const logFile = path.join(here, 'push.log');
 const log = line => fs.appendFileSync(logFile, `${new Date().toISOString()} ${line}\n`);
@@ -28,7 +29,8 @@ const KNOWN = [
   { match: /^cursor/, name: 'Cursor', logo: 'cursor' },
   { match: /^grok-?bot/, name: 'GrokBot', logo: 'grok' },
   { match: /^grok|^xai/, name: 'Grok', logo: 'grok' },
-  { match: /^antigravity|^gemini|^agy/, name: 'Antigravity', logo: 'antigravity-color' },
+  { match: /^antigravity|^gemini(?!-api)|^agy/, name: 'Antigravity', logo: 'antigravity-color' },
+  { match: /^gemini-api/, name: 'Gemini API', logo: 'gemini-color' },
   { match: /^glm|^zai|^zhipu/, name: 'GLM', logo: 'zhipu-color' },
   { match: /^deepseek/, name: 'DeepSeek', logo: 'deepseek-color' },
   { match: /^minimax/, name: 'MiniMax', logo: 'minimax-color' },
@@ -50,7 +52,7 @@ function readWindows() {
     if (id === 'claude') headline = windows.find(w => w.id === 'session' && w.resetsAt) || windows.find(w => w.id === 'weekly_all') || headline;
     if (id === 'antigravity') headline = windows.find(w => /weekly/i.test(w.id) && /gemini/i.test(w.id)) || headline;
     if (id === 'cursor') headline = windows.find(w => w.id === 'included') || headline;
-    out.push({ id, displayName: null, headline, stale: j.status !== 'ok' });
+    out.push({ id, displayName: null, headline });
   }
   return out;
 }
@@ -61,12 +63,15 @@ export function parseMacArchive(json) {
   return JSON.parse(json).map(e => {
     const windows = (e.windows || []).map(w => ({ id: w.id, label: w.label, used: w.usedFraction, resetsAt: typeof w.resetsAt === 'number' ? new Date(APPLE_EPOCH_MS + w.resetsAt * 1000) : null }));
     const headline = windows.find(w => w.id === e.headlineID) || windows.find(w => typeof w.used === 'number') || windows[0];
-    return { id: e.id, displayName: e.displayName || null, headline, stale: false };
+    return { id: e.id, displayName: e.displayName || null, headline };
   }).filter(p => p.headline);
 }
 function readMac() {
-  const plist = execFileSync('defaults', ['export', 'com.vinz.codenotch', '-'], { encoding: 'utf8' });
-  const b64 = execFileSync('plutil', ['-extract', 'lastGoodReadings', 'raw', '-o', '-', '-'], { input: plist, encoding: 'utf8' }).trim();
+  let plist, b64;
+  try { plist = execFileSync('defaults', ['export', 'com.vinz.codenotch', '-'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); }
+  catch { throw new Error('Codenotch preferences not found. Install and open Codenotch, let it show your usage, then try again.'); }
+  try { b64 = execFileSync('plutil', ['-extract', 'lastGoodReadings', 'raw', '-o', '-', '-'], { input: plist, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim(); }
+  catch { throw new Error('Codenotch has no saved readings yet. Open Codenotch and wait until its rings show usage, then try again.'); }
   return parseMacArchive(Buffer.from(b64, 'base64').toString('utf8'));
 }
 
@@ -87,7 +92,8 @@ export function resetText(date, now = new Date()) {
 export function toSlots(providers, { include, exclude = [], now = new Date() } = {}) {
   let list = providers.map(p => {
     const k = known(p.id);
-    return { key: p.id, name: k?.name || p.displayName || p.id, logo: k ? LOGO + k.logo + '.png' : BLANK, order: k ? KNOWN.indexOf(k) : 99, pct: pct(p.headline.used), resetsAt: p.headline.resetsAt };
+    // Codenotch's own name wins (it tells profiles apart, e.g. a second Claude account); else the known name.
+    return { key: p.id, name: p.displayName || k?.name || p.id, logo: k ? LOGO + k.logo + '.png' : BLANK, order: k ? KNOWN.indexOf(k) : 99, pct: pct(p.headline.used), resetsAt: p.headline.resetsAt };
   });
   if (include?.length) list = list.filter(s => include.some(n => n.toLowerCase() === s.name.toLowerCase() || n.toLowerCase() === s.key.toLowerCase()));
   list = list.filter(s => !exclude.some(n => n.toLowerCase() === s.name.toLowerCase() || n.toLowerCase() === s.key.toLowerCase()));
@@ -96,22 +102,39 @@ export function toSlots(providers, { include, exclude = [], now = new Date() } =
     .map(s => ({ ...s, reset: s.empty ? '' : resetText(s.resetsAt, now) }));
 }
 
+// Fields each layout binds, per slot. Only these are sent: Glance may reject fields a layout doesn't use.
+const FIELDS = {
+  free: ['logo', 'name', 'bar', 'pct', 'reset'],
+  circles: ['logo', 'level', 'pct'],
+  rings: ['logo', 'ring', 'pct'],
+  bars: ['logo', 'name', 'pct', 'reset', 'cells'],
+};
+const HAS_UPDATED = new Set(['free', 'circles', 'rings']);
+
 export function content(kind, slots, now = new Date()) {
+  const fields = FIELDS[kind];
+  if (!fields) throw new Error(`Unknown widget "${kind}" in config.json (use free, circles, rings or bars)`);
+  const value = {
+    logo: s => s.logo,
+    name: s => s.name,
+    pct: s => (s.empty ? ' ' : `${s.pct}%`),
+    reset: s => s.reset || ' ',
+    bar: s => (s.empty ? ' ' : textBar(s.pct)),
+    level: s => (s.empty ? -1 : s.pct), // -1 hides the circle
+    ring: s => (s.empty ? [0, 100] : [s.pct, 100 - s.pct]),
+    cells: s => { const f = Math.round(s.pct / 2); return Array.from({ length: 50 }, (_, j) => (!s.empty && j < f ? 1 : 0)); },
+  };
   const c = {};
-  slots.forEach((s, i) => {
-    const n = i + 1;
-    c[`s${n}_logo`] = s.logo;
-    c[`s${n}_name`] = s.name;
-    c[`s${n}_pct`] = s.empty ? ' ' : `${s.pct}%`;
-    c[`s${n}_reset`] = s.reset || ' ';
-    if (kind === 'free') c[`s${n}_bar`] = s.empty ? ' ' : textBar(s.pct);
-    if (kind === 'circles') c[`s${n}_level`] = s.empty ? -1 : s.pct;
-    if (kind === 'rings') { c[`s${n}_ring`] = s.empty ? [0, 100] : [s.pct, 100 - s.pct]; }
-    if (kind === 'bars') { const f = Math.round(s.pct / 2); c[`s${n}_cells`] = Array.from({ length: 50 }, (_, j) => (!s.empty && j < f ? 1 : 0)); }
-  });
+  slots.forEach((s, i) => { for (const f of fields) c[`s${i + 1}_${f}`] = value[f](s); });
   if (kind === 'rings') c.ring_labels = ['Used', 'Left'];
-  c.updated = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
+  if (HAS_UPDATED.has(kind)) c.updated = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
   return c;
+}
+
+// Quiet hours on a 24h local clock; start > end wraps past midnight (e.g. 22 -> 6).
+export function inQuietHours(q, hour) {
+  if (!q || q.start === q.end) return false;
+  return q.start < q.end ? hour >= q.start && hour < q.end : hour >= q.start || hour < q.end;
 }
 
 // ---------- pushing ----------
@@ -125,24 +148,30 @@ async function send(feed, body) {
 }
 
 async function main() {
-  const config = JSON.parse(fs.readFileSync(path.join(here, 'config.json'), 'utf8'));
-  const quiet = config.quietHours ?? { start: 0, end: 6 };
-  const hour = new Date().getHours();
-  if (!args.has('--force') && !args.has('--print') && quiet && hour >= quiet.start && hour < quiet.end) return;
+  const print = args.has('--print');
+  let config;
+  try { config = JSON.parse(fs.readFileSync(path.join(here, 'config.json'), 'utf8')); }
+  catch (e) {
+    if (!print) throw new Error(e.code === 'ENOENT' ? 'config.json not found: copy config.example.json to config.json (see README)' : `config.json is not valid JSON: ${e.message}`);
+    config = {};
+  }
+  if (!print && !args.has('--force') && inQuietHours(config.quietHours ?? { start: 0, end: 6 }, new Date().getHours())) return;
 
   const providers = process.platform === 'darwin' ? readMac() : readWindows();
   const now = new Date();
   const slots = toSlots(providers, { include: config.providers, exclude: config.hideProviders, now });
-  const widgets = Object.entries(config.widgets || {}).filter(([, f]) => f?.feed_id && f?.write_key && !/PASTE/.test(f.write_key));
-  if (!widgets.length) throw new Error('No widgets configured in config.json (see README)');
+  let widgets = Object.entries(config.widgets || {}).filter(([, f]) => f?.feed_id && f?.write_key && !/PASTE/.test(f.write_key));
+  if (print && !widgets.length) widgets = [['free', {}], ['circles', {}]]; // preview before any widget exists
+  if (!widgets.length) throw new Error('No widgets configured in config.json yet: follow SETUP-PROMPT.md and paste the keys it gives you');
+  if (!slots.some(s => !s.empty)) console.warn('Codenotch reported no usage yet; the widget will be empty.');
 
   const errors = [];
   for (const [kind, feed] of widgets) {
     const body = content(kind, slots, now);
-    if (args.has('--print')) { console.log(kind, JSON.stringify(body, null, 1)); continue; }
+    if (print) { console.log(kind, JSON.stringify(body, null, 1)); continue; }
     try { await send(feed, body); } catch (e) { errors.push(`${kind}: ${e.message}`); }
   }
-  if (args.has('--print')) return;
+  if (print) return;
   const summary = slots.filter(s => !s.empty).map(s => `${s.name}=${s.pct}`).join(' ');
   if (errors.length) { log(`ERR ${errors.join(' | ')}`); throw new Error(errors.join(' | ')); }
   log(`ok  ${summary}`);
