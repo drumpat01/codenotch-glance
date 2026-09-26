@@ -11,8 +11,9 @@ const bindings = tree => {
 };
 const slots = toSlots([{ id: 'claude', displayName: 'Claude', headline: { used: 0.4, resetsAt: new Date(Date.now() + 3600e3) } }]);
 
-for (const [kind, file] of Object.entries({ free: 'free', circles: 'free-circles', rings: 'pro-rings', bars: 'pro-bars' })) {
-  test(`${file}.json matches the ${kind} push exactly`, () => {
+for (const file of ['free-rings', 'free-bars', 'pro-rings', 'pro-bars']) {
+  const kind = file;
+  test(`${file}.json matches its push exactly`, () => {
     const wanted = bindings(JSON.parse(fs.readFileSync(new URL(`../layouts/${file}.json`, import.meta.url))));
     const sent = new Set(Object.keys(content(kind, slots)));
     assert.deepEqual([...sent].filter(k => !wanted.has(k)).sort(), [], 'sent but not in layout');

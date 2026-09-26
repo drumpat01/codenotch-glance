@@ -14,7 +14,7 @@ const header = { id: 'header', type: 'container', layout: 'horizontal', style: {
 const root = children => ({ id: 'root', type: 'container', layout: 'vertical', style: { padding: 12, spacing: 0, alignment: 'leading', background: BG }, children });
 const spaced = rows => rows.flatMap((r, i) => [{ id: `g${i}`, type: 'spacer', style: { flex: 1 } }, r]).concat([{ id: 'gEnd', type: 'spacer', style: { flex: 1 } }]);
 
-// Free plan: text bars (no charts/grids needed).
+// Bars (Free): text bars (no charts/grids needed).
 const free = root([header, ...spaced(slots.map(n => ({ id: `r${n}`, type: 'container', layout: 'horizontal', style: { spacing: 6, alignment: 'center' }, children: [
   { id: `r${n}_logo`, type: 'image', binding: `{{s${n}_logo}}`, style: { width: 14, height: 14, contentMode: 'fit' } },
   { id: `r${n}_namebox`, type: 'container', layout: 'horizontal', style: { width: 72 }, children: [text(`r${n}_name`, `{{s${n}_name}}`, { fontSize: 11, fontWeight: 'semibold', color: '#FFFFFF' })] },
@@ -23,7 +23,7 @@ const free = root([header, ...spaced(slots.map(n => ({ id: `r${n}`, type: 'conta
   { id: `r${n}_sp`, type: 'spacer', style: { flex: 1 } },
   text(`r${n}_reset`, `{{s${n}_reset}}`, { fontSize: 10, color: DIM })] })))]);
 
-// Pro: donut rings with logos (charts family).
+// Rings (Pro): donut rings with logos (charts family).
 const rings = { ...root([{ ...header, style: { ...header.style } }, { id: 'gap', type: 'spacer', style: { flex: 1 } },
   { id: 'rings', type: 'container', layout: 'horizontal', style: { spacing: 4, alignment: 'center' }, children: slots.map(n => ({ id: `p${n}`, type: 'container', layout: 'vertical', style: { spacing: 6, alignment: 'center', flex: 1 }, children: [
     { id: `p${n}z`, type: 'container', layout: 'z-stack', style: { width: 60, height: 60, alignment: 'center' }, children: [
@@ -33,7 +33,7 @@ const rings = { ...root([{ ...header, style: { ...header.style } }, { id: 'gap',
   { id: 'gap2', type: 'spacer', style: { flex: 1 } }]) };
 rings.style = { ...rings.style, alignment: 'center', padding: 14 };
 
-// Free: circles with logos whose ring color shows usage (green < 50%, amber < 80%, red), using free shape + color mapping.
+// Rings (Free): circles with logos whose ring color shows usage (green < 50%, amber < 80%, red), using free shape + color mapping.
 const LEVEL = n => ({ from: `{{s${n}_level}}`, when: [{ lt: 0, value: BG }, { lt: 50, value: '#30D158' }, { lt: 80, value: '#FF9F0A' }], else: '#FF453A' });
 const circles = { ...root([{ ...header }, { id: 'gap', type: 'spacer', style: { flex: 1 } },
   { id: 'circles', type: 'container', layout: 'horizontal', style: { spacing: 4, alignment: 'center' }, children: slots.map(n => ({ id: `c${n}`, type: 'container', layout: 'vertical', style: { spacing: 6, alignment: 'center', flex: 1 }, children: [
@@ -44,7 +44,7 @@ const circles = { ...root([{ ...header }, { id: 'gap', type: 'spacer', style: { 
   { id: 'gap2', type: 'spacer', style: { flex: 1 } }]) };
 circles.style = { ...circles.style, alignment: 'center', padding: 14 };
 
-// Pro: thin 50-cell bars (activity grid family) with reset times.
+// Bars (Pro): thin 50-cell bars (activity grid family) with reset times.
 const bars = root(spaced(slots.map(n => ({ id: `b${n}`, type: 'container', layout: 'horizontal', style: { spacing: 8, alignment: 'center' }, children: [
   { id: `b${n}_logo`, type: 'image', binding: `{{s${n}_logo}}`, style: { width: 16, height: 16, contentMode: 'fit' } },
   { id: `b${n}_col`, type: 'container', layout: 'vertical', style: { spacing: 3, alignment: 'leading', flex: 1 }, children: [
@@ -56,7 +56,7 @@ const bars = root(spaced(slots.map(n => ({ id: `b${n}`, type: 'container', layou
     { id: `b${n}_bar`, type: 'grid', variant: 'activity', rows: 1, columns: 50, binding: `{{s${n}_cells}}`, style: { height: 4, cellGap: 0, cellShape: 'square', cellCornerRadius: 0, emptyColor: TRACK, colorScale: { from: `{{s${n}_cells}}`, stops: [{ at: 0, value: TRACK }, { at: 1, value: COLORS[n - 1] }] } } }] }] }))));
 
 fs.mkdirSync(out, { recursive: true });
-for (const [name, tree] of Object.entries({ free, 'free-circles': circles, 'pro-rings': rings, 'pro-bars': bars })) {
+for (const [name, tree] of Object.entries({ 'free-bars': free, 'free-rings': circles, 'pro-rings': rings, 'pro-bars': bars })) {
   fs.writeFileSync(path.join(out, `${name}.json`), JSON.stringify(tree, null, 2) + '\n');
   console.log(`layouts/${name}.json`);
 }

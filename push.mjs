@@ -103,17 +103,20 @@ export function toSlots(providers, { include, exclude = [], now = new Date() } =
 }
 
 // Fields each layout binds, per slot. Only these are sent: Glance may reject fields a layout doesn't use.
+// Keys match the layout file names; older key names still work.
 const FIELDS = {
-  free: ['logo', 'name', 'bar', 'pct', 'reset'],
-  circles: ['logo', 'level', 'pct'],
-  rings: ['logo', 'ring', 'pct'],
-  bars: ['logo', 'name', 'pct', 'reset', 'cells'],
+  'free-bars': ['logo', 'name', 'bar', 'pct', 'reset'],
+  'free-rings': ['logo', 'level', 'pct'],
+  'pro-rings': ['logo', 'ring', 'pct'],
+  'pro-bars': ['logo', 'name', 'pct', 'reset', 'cells'],
 };
-const HAS_UPDATED = new Set(['free', 'circles', 'rings']);
+const ALIASES = { free: 'free-bars', circles: 'free-rings', rings: 'pro-rings', bars: 'pro-bars' };
+const HAS_UPDATED = new Set(['free-bars', 'free-rings', 'pro-rings']);
 
-export function content(kind, slots, now = new Date()) {
+export function content(name, slots, now = new Date()) {
+  const kind = ALIASES[name] || name;
   const fields = FIELDS[kind];
-  if (!fields) throw new Error(`Unknown widget "${kind}" in config.json (use free, circles, rings or bars)`);
+  if (!fields) throw new Error(`Unknown widget "${name}" in config.json (use free-rings, free-bars, pro-rings or pro-bars)`);
   const value = {
     logo: s => s.logo,
     name: s => s.name,
@@ -126,7 +129,7 @@ export function content(kind, slots, now = new Date()) {
   };
   const c = {};
   slots.forEach((s, i) => { for (const f of fields) c[`s${i + 1}_${f}`] = value[f](s); });
-  if (kind === 'rings') c.ring_labels = ['Used', 'Left'];
+  if (kind === 'pro-rings') c.ring_labels = ['Used', 'Left'];
   if (HAS_UPDATED.has(kind)) c.updated = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
   return c;
 }
@@ -161,7 +164,7 @@ async function main() {
   const now = new Date();
   const slots = toSlots(providers, { include: config.providers, exclude: config.hideProviders, now });
   let widgets = Object.entries(config.widgets || {}).filter(([, f]) => f?.feed_id && f?.write_key && !/PASTE/.test(f.write_key));
-  if (print && !widgets.length) widgets = [['free', {}], ['circles', {}]]; // preview before any widget exists
+  if (print && !widgets.length) widgets = [['free-rings', {}], ['free-bars', {}]]; // preview before any widget exists
   if (!widgets.length) throw new Error('No widgets configured in config.json yet: follow SETUP-PROMPT.md and paste the keys it gives you');
   if (!slots.some(s => !s.empty)) console.warn('Codenotch reported no usage yet; the widget will be empty.');
 

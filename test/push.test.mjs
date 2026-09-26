@@ -34,14 +34,14 @@ test('slots are ordered, capped, and padded; unknown providers keep their name',
 
 test('content matches each layout', () => {
   const slots = toSlots(parseMacArchive(archive), { now });
-  const free = content('free', slots, now);
+  const free = content('free-bars', slots, now);
   assert.equal(free.s1_bar, '▰▰▰▱▱▱▱▱▱▱');
   assert.equal(free.s5_name, ' ');
-  assert.deepEqual(content('rings', slots, now).s2_ring, [61, 39]);
-  const circles = content('circles', slots, now);
+  assert.deepEqual(content('pro-rings', slots, now).s2_ring, [61, 39]);
+  const circles = content('free-rings', slots, now);
   assert.equal(circles.s1_level, 27);
   assert.equal(circles.s5_level, -1); // empty slot hides its circle
-  assert.equal(content('bars', slots, now).s2_cells.filter(Boolean).length, 31);
+  assert.equal(content('pro-bars', slots, now).s2_cells.filter(Boolean).length, 31);
   for (const v of Object.values(free)) assert.notEqual(v, '', 'no empty strings (Glance fields are required)');
 });
 
@@ -62,6 +62,13 @@ test('quiet hours, including past midnight', () => {
   assert.equal(inQuietHours({ start: 22, end: 6 }, 5), true);
   assert.equal(inQuietHours({ start: 22, end: 6 }, 12), false);
   assert.equal(inQuietHours({ start: 0, end: 0 }, 3), false);
+});
+
+test('older config keys still work', () => {
+  const slots = toSlots(parseMacArchive(archive), { now });
+  assert.deepEqual(content('circles', slots, now), content('free-rings', slots, now));
+  assert.deepEqual(content('free', slots, now), content('free-bars', slots, now));
+  assert.throws(() => content('sparkles', slots, now), /Unknown widget/);
 });
 
 test('helpers', () => {

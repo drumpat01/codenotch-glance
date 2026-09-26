@@ -1,9 +1,9 @@
 {
   "widgets": {
-    "free":  { "feed_id": "PASTE_FEED_ID", "template_id": "PASTE_TEMPLATE_ID", "write_key": "PASTE_WRITE_KEY" },
-    "circles": { "feed_id": "", "template_id": "", "write_key": "" },
-    "rings": { "feed_id": "", "template_id": "", "write_key": "" },
-    "bars":  { "feed_id": "", "template_id": "", "write_key": "" }
+    "free-rings": { "feed_id": "", "template_id": "", "write_key": "" },
+    "free-bars":  { "feed_id": "", "template_id": "", "write_key": "" },
+    "pro-rings":  { "feed_id": "", "template_id": "", "write_key": "" },
+    "pro-bars":   { "feed_id": "", "template_id": "", "write_key": "" }
   },
   "providers": [],
   "hideProviders": [],

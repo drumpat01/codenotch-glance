@@ -2,12 +2,16 @@
 
 Your AI usage limits from [Codenotch](https://github.com/vinzdg/codenotch) as iPhone Home Screen widgets, via [Glance](https://glance.cool). Your computer pushes your numbers to your own widget every hour; nothing is shared with anyone else.
 
-| Widget | Glance plan | Looks like |
-| --- | --- | --- |
-| **Codenotch** (`layouts/free.json`) | Free | Up to 5 rows: logo, name, `▰▰▰▰▱▱▱▱▱▱` bar, %, "resets in 3h" |
-| **Codenotch Circles** (`layouts/free-circles.json`) | Free | 5 circles with logos; the ring turns green, amber (50%+) or red (80%+), % underneath |
-| **Codenotch Rings** (`layouts/pro-rings.json`) | Pro | 5 donut rings with logos that fill to the exact %, like the notch |
-| **Codenotch Bars** (`layouts/pro-bars.json`) | Pro | 5 thin bars with logos, %, reset times |
+Pick any of four widgets. Each style comes in a **Free** version (any Glance plan) and a **Pro** version (needs Glance Pro for charts and grids):
+
+| Widget | Layout file | Glance plan | Looks like |
+| --- | --- | --- | --- |
+| **Codenotch Rings (Free)** | `layouts/free-rings.json` | Free | 5 logo circles; the ring turns green, amber (50%+) or red (80%+); % underneath |
+| **Codenotch Rings (Pro)** | `layouts/pro-rings.json` | Pro | 5 logo rings that fill to the exact %, like the notch |
+| **Codenotch Bars (Free)** | `layouts/free-bars.json` | Free | 5 rows: logo, name, `▰▰▰▰▱▱▱▱▱▱` bar, %, "resets in 3h" |
+| **Codenotch Bars (Pro)** | `layouts/pro-bars.json` | Pro | 5 rows: logo, name, %, reset time, thin bar that fills to the exact % |
+
+The free Glance plan allows 3 widgets, so free users can run both free versions.
 
 It shows whichever AI tools Codenotch tracks for you (Claude, Codex, Cursor, Grok, Antigravity, and others), up to five.
 
@@ -18,7 +22,7 @@ It shows whichever AI tools Codenotch tracks for you (Claude, Codex, Cursor, Gro
 3. **Glance** from the App Store; create a free account.
 4. **Download this repo** (green **Code** button → **Download ZIP**, then unzip) and copy `config.example.json` to `config.json`. Check it can read Codenotch: `node push.mjs --print` in a terminal in the folder should list your AI tools.
 5. **Create the widget(s):** follow [SETUP-PROMPT.md](SETUP-PROMPT.md) (your AI assistant does it with the Glance MCP), then paste the keys it gives you into `config.json`.
-6. **First push:** in a terminal in this folder, `node push.mjs --force`. Then add a **medium** Glance widget to your Home Screen and pick "Codenotch".
+6. **First push:** in a terminal in this folder, `node push.mjs --force`. Then add a **medium** Glance widget to your Home Screen and pick your Codenotch widget.
 7. **Every hour, automatically:**
    - macOS: `zsh schedule/install-mac.sh`
    - Windows (PowerShell): `powershell -ExecutionPolicy Bypass -File schedule\install-windows.ps1`
