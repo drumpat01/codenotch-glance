@@ -1,0 +1,8 @@
+{
+  "name": "codenotch-glance",
+  "private": true,
+  "type": "module",
+  "description": "Codenotch AI usage as Glance iPhone widgets (macOS + Windows)",
+  "scripts": { "push": "node push.mjs", "test": "node --test" },
+  "engines": { "node": ">=18" }
+}
