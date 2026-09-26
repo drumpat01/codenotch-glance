@@ -24,11 +24,11 @@ test('parses the macOS archive and picks each headline window', () => {
 });
 
 test('slots are ordered, capped, and padded; unknown providers keep their name', () => {
-  const slots = toSlots(parseMacArchive(archive), { now });
+  const slots = toSlots(parseMacArchive(archive), { now, timeZone: 'UTC' });
   assert.deepEqual(slots.map(s => s.name), ['Claude', 'Codex', 'Newcomer', ' ', ' ']);
   assert.equal(slots[0].pct, 27);
   assert.equal(slots[2].pct, 100); // clamped
-  assert.equal(slots[0].reset, 'resets in 3h');
+  assert.equal(slots[0].reset, 'in 3h · 3:00 PM');
   assert.equal(toSlots(parseMacArchive(archive), { exclude: ['codex'], now })[1].name, 'Newcomer');
 });
 
@@ -74,6 +74,7 @@ test('older config keys still work', () => {
 test('helpers', () => {
   assert.equal(textBar(0), '▱'.repeat(10));
   assert.equal(textBar(100), '▰'.repeat(10));
-  assert.equal(resetText(new Date(now.getTime() + 30 * 60000), now), 'resets in 30m');
-  assert.equal(resetText(new Date(now.getTime() + 3 * 86400000), now), 'resets in 3d');
+  assert.equal(resetText(new Date(now.getTime() + 30 * 60000), now, 'UTC'), 'in 30m · 12:30 PM');
+  assert.equal(resetText(new Date(now.getTime() + 3 * 86400000), now, 'UTC'), 'in 3d · Tue 9/29');
+  assert.equal(resetText(new Date(now.getTime() - 1000), now), 'resetting');
 });

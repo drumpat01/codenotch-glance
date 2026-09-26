@@ -79,17 +79,19 @@ function readMac() {
 
 const pct = used => Math.round(Math.min(1, Math.max(0, Number(used) || 0)) * 100);
 export function textBar(p, cells = 10) { const n = Math.round((p / 100) * cells); return '▰'.repeat(n) + '▱'.repeat(cells - n); }
-export function resetText(date, now = new Date()) {
+// "in 3h · 1:40 PM" within a day, else "in 2d · Mon 9/28" (local time). Short enough for the Free Bars row.
+export function resetText(date, now = new Date(), timeZone) {
   if (!date || Number.isNaN(date.getTime())) return '';
   const mins = Math.round((date - now) / 60000);
   if (mins <= 0) return 'resetting';
-  if (mins < 60) return `resets in ${mins}m`;
   const hours = Math.round(mins / 60);
-  if (hours < 48) return `resets in ${hours}h`;
-  return `resets in ${Math.round(hours / 24)}d`;
+  const rel = mins < 60 ? `in ${mins}m` : hours < 48 ? `in ${hours}h` : `in ${Math.round(hours / 24)}d`;
+  const f = opts => new Intl.DateTimeFormat('en-US', { timeZone, ...opts }).format(date);
+  const when = mins < 24 * 60 ? f({ hour: 'numeric', minute: '2-digit' }) : `${f({ weekday: 'short' })} ${f({ month: 'numeric', day: 'numeric' })}`;
+  return `${rel} · ${when}`;
 }
 
-export function toSlots(providers, { include, exclude = [], now = new Date() } = {}) {
+export function toSlots(providers, { include, exclude = [], now = new Date(), timeZone } = {}) {
   let list = providers.map(p => {
     const k = known(p.id);
     // Codenotch's own name wins (it tells profiles apart, e.g. a second Claude account); else the known name.
@@ -99,7 +101,7 @@ export function toSlots(providers, { include, exclude = [], now = new Date() } =
   list = list.filter(s => !exclude.some(n => n.toLowerCase() === s.name.toLowerCase() || n.toLowerCase() === s.key.toLowerCase()));
   list.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
   return Array.from({ length: SLOTS }, (_, i) => list[i] || null).map(s => s || { name: ' ', logo: BLANK, pct: 0, resetsAt: null, empty: true })
-    .map(s => ({ ...s, reset: s.empty ? '' : resetText(s.resetsAt, now) }));
+    .map(s => ({ ...s, reset: s.empty ? '' : resetText(s.resetsAt, now, timeZone) }));
 }
 
 // Fields each layout binds, per slot. Only these are sent: Glance may reject fields a layout doesn't use.

@@ -8,8 +8,8 @@ Pick any of four widgets. Each style comes in a **Free** version (any Glance pla
 | --- | --- | --- | --- |
 | **Codenotch Rings (Free)** | `layouts/free-rings.json` | Free | 5 logo circles; the ring turns green, amber (50%+) or red (80%+); % underneath |
 | **Codenotch Rings (Pro)** | `layouts/pro-rings.json` | Pro | 5 logo rings that fill to the exact %, like the notch |
-| **Codenotch Bars (Free)** | `layouts/free-bars.json` | Free | 5 rows: logo, name, `▰▰▰▰▱▱▱▱▱▱` bar, %, "resets in 3h" |
-| **Codenotch Bars (Pro)** | `layouts/pro-bars.json` | Pro | 5 rows: logo, name, %, reset time, thin bar that fills to the exact % |
+| **Codenotch Bars (Free)** | `layouts/free-bars.json` | Free | 5 rows: logo, name, `▰▰▰▰▱▱▱▱▱▱` bar, %, reset countdown and date ("in 2d · Mon 9/28") |
+| **Codenotch Bars (Pro)** | `layouts/pro-bars.json` | Pro | 5 rows: logo, name, %, reset countdown and date, thin bar that fills to the exact % |
 
 The free Glance plan allows 3 widgets, so free users can run both free versions.
 
