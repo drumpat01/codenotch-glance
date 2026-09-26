@@ -38,6 +38,9 @@ test('content matches each layout', () => {
   assert.equal(free.s1_bar, '▰▰▰▱▱▱▱▱▱▱');
   assert.equal(free.s5_name, ' ');
   assert.deepEqual(content('rings', slots, now).s2_ring, [61, 39]);
+  const circles = content('circles', slots, now);
+  assert.equal(circles.s1_level, 27);
+  assert.equal(circles.s5_level, -1); // empty slot hides its circle
   assert.equal(content('bars', slots, now).s2_cells.filter(Boolean).length, 31);
   for (const v of Object.values(free)) assert.notEqual(v, '', 'no empty strings (Glance fields are required)');
 });

@@ -5,7 +5,8 @@ Your AI usage limits from [Codenotch](https://github.com/vinzdg/codenotch) as iP
 | Widget | Glance plan | Looks like |
 | --- | --- | --- |
 | **Codenotch** (`layouts/free.json`) | Free | Up to 5 rows: logo, name, `▰▰▰▰▱▱▱▱▱▱` bar, %, "resets in 3h" |
-| **Codenotch Rings** (`layouts/pro-rings.json`) | Pro | 5 donut rings with logos, like the notch |
+| **Codenotch Circles** (`layouts/free-circles.json`) | Free | 5 circles with logos; the ring turns green, amber (50%+) or red (80%+), % underneath |
+| **Codenotch Rings** (`layouts/pro-rings.json`) | Pro | 5 donut rings with logos that fill to the exact %, like the notch |
 | **Codenotch Bars** (`layouts/pro-bars.json`) | Pro | 5 thin bars with logos, %, reset times |
 
 It shows whichever AI tools Codenotch tracks for you (Claude, Codex, Cursor, Grok, Antigravity, and others), up to five.

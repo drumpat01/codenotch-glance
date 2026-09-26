@@ -105,6 +105,7 @@ export function content(kind, slots, now = new Date()) {
     c[`s${n}_pct`] = s.empty ? ' ' : `${s.pct}%`;
     c[`s${n}_reset`] = s.reset || ' ';
     if (kind === 'free') c[`s${n}_bar`] = s.empty ? ' ' : textBar(s.pct);
+    if (kind === 'circles') c[`s${n}_level`] = s.empty ? -1 : s.pct;
     if (kind === 'rings') { c[`s${n}_ring`] = s.empty ? [0, 100] : [s.pct, 100 - s.pct]; }
     if (kind === 'bars') { const f = Math.round(s.pct / 2); c[`s${n}_cells`] = Array.from({ length: 50 }, (_, j) => (!s.empty && j < f ? 1 : 0)); }
   });

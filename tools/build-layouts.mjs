@@ -33,6 +33,17 @@ const rings = { ...root([{ ...header, style: { ...header.style } }, { id: 'gap',
   { id: 'gap2', type: 'spacer', style: { flex: 1 } }]) };
 rings.style = { ...rings.style, alignment: 'center', padding: 14 };
 
+// Free: circles with logos whose ring color shows usage (green < 50%, amber < 80%, red), using free shape + color mapping.
+const LEVEL = n => ({ from: `{{s${n}_level}}`, when: [{ lt: 0, value: BG }, { lt: 50, value: '#30D158' }, { lt: 80, value: '#FF9F0A' }], else: '#FF453A' });
+const circles = { ...root([{ ...header }, { id: 'gap', type: 'spacer', style: { flex: 1 } },
+  { id: 'circles', type: 'container', layout: 'horizontal', style: { spacing: 4, alignment: 'center' }, children: slots.map(n => ({ id: `c${n}`, type: 'container', layout: 'vertical', style: { spacing: 6, alignment: 'center', flex: 1 }, children: [
+    { id: `c${n}z`, type: 'container', layout: 'z-stack', style: { width: 60, height: 60, alignment: 'center' }, children: [
+      { id: `c${n}ring`, type: 'shape', variant: 'circle', style: { size: 52, fillColor: { from: `{{s${n}_level}}`, when: [{ lt: 0, value: BG }], else: '#1C1C1E' }, strokeWidth: 5, strokeColor: LEVEL(n) } },
+      { id: `c${n}i`, type: 'image', binding: `{{s${n}_logo}}`, style: { width: 22, height: 22, contentMode: 'fit' } }] },
+    text(`c${n}t`, `{{s${n}_pct}}`, { fontSize: 13, fontWeight: 'semibold', color: '#FFFFFF', alignment: 'center' })] })) },
+  { id: 'gap2', type: 'spacer', style: { flex: 1 } }]) };
+circles.style = { ...circles.style, alignment: 'center', padding: 14 };
+
 // Pro: thin 50-cell bars (activity grid family) with reset times.
 const bars = root(spaced(slots.map(n => ({ id: `b${n}`, type: 'container', layout: 'horizontal', style: { spacing: 8, alignment: 'center' }, children: [
   { id: `b${n}_logo`, type: 'image', binding: `{{s${n}_logo}}`, style: { width: 16, height: 16, contentMode: 'fit' } },
@@ -45,7 +56,7 @@ const bars = root(spaced(slots.map(n => ({ id: `b${n}`, type: 'container', layou
     { id: `b${n}_bar`, type: 'grid', variant: 'activity', rows: 1, columns: 50, binding: `{{s${n}_cells}}`, style: { height: 4, cellGap: 0, cellShape: 'square', cellCornerRadius: 0, emptyColor: TRACK, colorScale: { from: `{{s${n}_cells}}`, stops: [{ at: 0, value: TRACK }, { at: 1, value: COLORS[n - 1] }] } } }] }] }))));
 
 fs.mkdirSync(out, { recursive: true });
-for (const [name, tree] of Object.entries({ free, 'pro-rings': rings, 'pro-bars': bars })) {
+for (const [name, tree] of Object.entries({ free, 'free-circles': circles, 'pro-rings': rings, 'pro-bars': bars })) {
   fs.writeFileSync(path.join(out, `${name}.json`), JSON.stringify(tree, null, 2) + '\n');
   console.log(`layouts/${name}.json`);
 }
