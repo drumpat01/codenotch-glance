@@ -15,9 +15,10 @@ Using the Glance tools, set up my Codenotch usage widgets from the attached layo
    - `pro-rings.json` → "Codenotch Rings (Pro)"
    - `free-bars.json` → "Codenotch Bars (Free)"
    - `pro-bars.json` → "Codenotch Bars (Pro)"
+   - `pro-combo.json` → "Codenotch Combo (Pro)". This file holds `tree` and `views`: pass both to `create_template` (it also needs `family_views`).
 
    If a widget with that name already exists, ask me first.
-3. Give me one ready-to-paste JSON block for the `widgets` section of my `config.json`, keyed by file name without `.json` (`"free-rings"`, `"pro-rings"`, `"free-bars"`, `"pro-bars"`), each `{ "feed_id": …, "template_id": …, "write_key": … }`. Write keys are only shown once, so include them.
+3. Give me one ready-to-paste JSON block for the `widgets` section of my `config.json`, keyed by file name without `.json` (`"free-rings"`, `"pro-rings"`, `"free-bars"`, `"pro-bars"`, `"pro-combo"`), each `{ "feed_id": …, "template_id": …, "write_key": … }`. Write keys are only shown once, so include them.
 
 Don't push any content yet; my computer will do that.
 

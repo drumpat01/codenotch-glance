@@ -45,6 +45,17 @@ test('content matches each layout', () => {
   for (const v of Object.values(free)) assert.notEqual(v, '', 'no empty strings (Glance fields are required)');
 });
 
+test('pro-combo colors bars by level: filled cells carry the %', () => {
+  const slots = toSlots([{ id: 'claude', headline: { used: 0.92 } }, { id: 'codex', headline: { used: 0 } }], { now });
+  const c = content('pro-combo', slots, now);
+  assert.equal(c.s1_level, 92);
+  assert.deepEqual([...new Set(c.s1_cells)].sort((a, b) => a - b), [0, 92]);
+  assert.equal(c.s1_cells.filter(Boolean).length, 46);
+  assert.equal(c.s2_cells.filter(Boolean).length, 0);
+  assert.equal(c.s5_level, -1);
+  assert.deepEqual(c.ring_labels, ['Used', 'Left']);
+});
+
 test('names: Codenotch display name wins; gemini-api is not Antigravity', () => {
   const p = [
     { id: 'claude', displayName: 'Claude', headline: { used: 0.1 } },
