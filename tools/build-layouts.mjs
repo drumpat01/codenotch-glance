@@ -55,8 +55,25 @@ const bars = root(spaced(slots.map(n => ({ id: `b${n}`, type: 'container', layou
       { id: `b${n}_sp`, type: 'spacer', style: { flex: 1 } }] },
     { id: `b${n}_bar`, type: 'grid', variant: 'activity', rows: 1, columns: 50, binding: `{{s${n}_cells}}`, style: { height: 4, cellGap: 0, cellShape: 'square', cellCornerRadius: 0, emptyColor: TRACK, colorScale: { from: `{{s${n}_cells}}`, stops: [{ at: 0, value: TRACK }, { at: 1, value: COLORS[n - 1] }] } } }] }] }))));
 
+// Combo (Pro): the Pro bars and Pro rings in one widget; tap to switch. Bars and rings turn
+// green, amber (70%+) or red (90%+). Filled cells carry the slot's % so the grid can color the whole bar.
+const WARN = level => ({ from: level, when: [{ lt: 0, value: TRACK }, { lt: 70, value: '#30D158' }, { lt: 90, value: '#FF9F0A' }], else: '#FF453A' });
+const comboBars = root(spaced(slots.map(n => ({ id: `b${n}`, type: 'container', layout: 'horizontal', style: { spacing: 8, alignment: 'center' }, children: [
+  { id: `b${n}_logo`, type: 'image', binding: `{{s${n}_logo}}`, style: { width: 16, height: 16, contentMode: 'fit' } },
+  { id: `b${n}_col`, type: 'container', layout: 'vertical', style: { spacing: 3, alignment: 'leading', flex: 1 }, children: [
+    { id: `b${n}_line`, type: 'container', layout: 'horizontal', style: { spacing: 4, alignment: 'center' }, children: [
+      text(`b${n}_name`, `{{s${n}_name}}`, { fontSize: 10, fontWeight: 'semibold', color: '#FFFFFF' }),
+      text(`b${n}_pct`, `{{s${n}_pct}}`, { fontSize: 10, fontWeight: 'semibold', color: WARN(`{{s${n}_level}}`) }),
+      text(`b${n}_reset`, `{{s${n}_reset}}`, { fontSize: 10, color: DIM }),
+      { id: `b${n}_sp`, type: 'spacer', style: { flex: 1 } }] },
+    { id: `b${n}_bar`, type: 'grid', variant: 'activity', rows: 1, columns: 50, binding: `{{s${n}_cells}}`, style: { height: 6, cellGap: 0, cellShape: 'square', cellCornerRadius: 0, emptyColor: TRACK, colorScale: { from: `{{s${n}_cells}}`, when: [{ lt: 1, value: TRACK }, { lt: 70, value: '#30D158' }, { lt: 90, value: '#FF9F0A' }], else: '#FF453A' } } }] }] }))));
+comboBars.action = { type: 'set_view', view: 'rings' };
+const comboRings = { ...rings, id: 'rings_root', action: { type: 'set_view', view: 'home' }, children: rings.children.map(c => c.id !== 'rings' ? c : { ...c, children: c.children.map(p => ({ ...p, children: [
+  p.children[0], text(p.children[1].id, p.children[1].binding, { ...p.children[1].style, color: WARN(`{{s${p.id.slice(1)}_level}}`) })] })) }) };
+const combo = { tree: comboBars, views: { rings: comboRings } };
+
 fs.mkdirSync(out, { recursive: true });
-for (const [name, tree] of Object.entries({ 'free-bars': free, 'free-rings': circles, 'pro-rings': rings, 'pro-bars': bars })) {
+for (const [name, tree] of Object.entries({ 'free-bars': free, 'free-rings': circles, 'pro-rings': rings, 'pro-bars': bars, 'pro-combo': combo })) {
   fs.writeFileSync(path.join(out, `${name}.json`), JSON.stringify(tree, null, 2) + '\n');
   console.log(`layouts/${name}.json`);
 }

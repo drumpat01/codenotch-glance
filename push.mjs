@@ -111,14 +111,15 @@ const FIELDS = {
   'free-rings': ['logo', 'level', 'pct'],
   'pro-rings': ['logo', 'ring', 'pct'],
   'pro-bars': ['logo', 'name', 'pct', 'reset', 'cells'],
+  'pro-combo': ['logo', 'name', 'pct', 'reset', 'level', 'ring', 'warncells'],
 };
 const ALIASES = { free: 'free-bars', circles: 'free-rings', rings: 'pro-rings', bars: 'pro-bars' };
-const HAS_UPDATED = new Set(['free-bars', 'free-rings', 'pro-rings']);
+const HAS_UPDATED = new Set(['free-bars', 'free-rings', 'pro-rings', 'pro-combo']);
 
 export function content(name, slots, now = new Date()) {
   const kind = ALIASES[name] || name;
   const fields = FIELDS[kind];
-  if (!fields) throw new Error(`Unknown widget "${name}" in config.json (use free-rings, free-bars, pro-rings or pro-bars)`);
+  if (!fields) throw new Error(`Unknown widget "${name}" in config.json (use free-rings, free-bars, pro-rings, pro-bars or pro-combo)`);
   const value = {
     logo: s => s.logo,
     name: s => s.name,
@@ -128,10 +129,12 @@ export function content(name, slots, now = new Date()) {
     level: s => (s.empty ? -1 : s.pct), // -1 hides the circle
     ring: s => (s.empty ? [0, 100] : [s.pct, 100 - s.pct]),
     cells: s => { const f = Math.round(s.pct / 2); return Array.from({ length: 50 }, (_, j) => (!s.empty && j < f ? 1 : 0)); },
+    // Filled cells carry the % itself so the layout can color the whole bar by level.
+    warncells: s => { const f = Math.round(s.pct / 2); return Array.from({ length: 50 }, (_, j) => (!s.empty && j < f ? Math.max(1, s.pct) : 0)); },
   };
   const c = {};
-  slots.forEach((s, i) => { for (const f of fields) c[`s${i + 1}_${f}`] = value[f](s); });
-  if (kind === 'pro-rings') c.ring_labels = ['Used', 'Left'];
+  slots.forEach((s, i) => { for (const f of fields) c[`s${i + 1}_${f === 'warncells' ? 'cells' : f}`] = value[f](s); });
+  if (kind === 'pro-rings' || kind === 'pro-combo') c.ring_labels = ['Used', 'Left'];
   if (HAS_UPDATED.has(kind)) c.updated = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
   return c;
 }

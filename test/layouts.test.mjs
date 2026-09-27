@@ -11,7 +11,7 @@ const bindings = tree => {
 };
 const slots = toSlots([{ id: 'claude', displayName: 'Claude', headline: { used: 0.4, resetsAt: new Date(Date.now() + 3600e3) } }]);
 
-for (const file of ['free-rings', 'free-bars', 'pro-rings', 'pro-bars']) {
+for (const file of ['free-rings', 'free-bars', 'pro-rings', 'pro-bars', 'pro-combo']) {
   const kind = file;
   test(`${file}.json matches its push exactly`, () => {
     const wanted = bindings(JSON.parse(fs.readFileSync(new URL(`../layouts/${file}.json`, import.meta.url))));

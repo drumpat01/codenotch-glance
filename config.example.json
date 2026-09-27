@@ -3,7 +3,8 @@
     "free-rings": { "feed_id": "", "template_id": "", "write_key": "" },
     "free-bars":  { "feed_id": "", "template_id": "", "write_key": "" },
     "pro-rings":  { "feed_id": "", "template_id": "", "write_key": "" },
-    "pro-bars":   { "feed_id": "", "template_id": "", "write_key": "" }
+    "pro-bars":   { "feed_id": "", "template_id": "", "write_key": "" },
+    "pro-combo":  { "feed_id": "", "template_id": "", "write_key": "" }
   },
   "providers": [],
   "hideProviders": [],
