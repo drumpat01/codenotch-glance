@@ -185,8 +185,10 @@ async function museRow(env) {
   const m = text.match(/event: response\.subscription_usage\s*\ndata: (.+)/);
   if (!m) throw new Error('muse: no subscription_usage event (pay-as-you-go key?)');
   const u = JSON.parse(m[1]);
-  const w = u.weekly || u.subscription_usage?.weekly;
-  return row(w?.used_percent, w?.resets_at);
+  // {"subscription":{"weekly":{"used_percent":0,"resets_at":1791158400},"window":{...}}}; resets_at is Unix seconds.
+  const w = u.subscription?.weekly || u.weekly;
+  const at = typeof w?.resets_at === 'number' ? w.resets_at * 1000 : w?.resets_at;
+  return row(w?.used_percent, at);
 }
 
 // ---------- OAuth: the Worker's own login, refreshed a few minutes before expiry ----------
