@@ -1,0 +1,18 @@
+name = "codenotch-glance"
+main = "src/worker.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+# Hourly, on the hour. Quiet hours are not needed: nothing runs on a PC any more.
+[triggers]
+crons = ["0 * * * *"]
+
+[[kv_namespaces]]
+binding = "STATE"
+id = "d3fb709f8bca4945b9a172b2a2e565ea"
+
+[vars]
+GLANCE_FEED_ID = "64acb345-a75d-49e6-9ffa-64cc32f1aa25"
+GLANCE_TEMPLATE_ID = "3c16c9a9-8c0f-48ee-84d9-03493862680e"
+EXPO_ACCOUNT = "journeydeck"
+TZ = "America/Chicago"
