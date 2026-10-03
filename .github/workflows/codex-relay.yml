@@ -1,0 +1,21 @@
+name: Codex relay
+# chatgpt.com blocks Cloudflare Workers, so Codex usage is fetched from GitHub's network
+# a few minutes before the Worker's hourly push.
+on:
+  schedule:
+    - cron: '55 * * * *'
+  workflow_dispatch:
+permissions: {}
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node cloud/relay/codex-relay.mjs
+        env:
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          RELAY_KEY: ${{ secrets.RELAY_KEY }}
