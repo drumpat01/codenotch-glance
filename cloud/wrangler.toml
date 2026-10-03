@@ -12,7 +12,7 @@ binding = "STATE"
 id = "d3fb709f8bca4945b9a172b2a2e565ea"
 
 [vars]
-GLANCE_FEED_ID = "64acb345-a75d-49e6-9ffa-64cc32f1aa25"
-GLANCE_TEMPLATE_ID = "3c16c9a9-8c0f-48ee-84d9-03493862680e"
+GLANCE_FEED_ID = "9d2a2f76-6d55-4646-a678-b57980e5e879"
+GLANCE_TEMPLATE_ID = "145281a1-1fac-4aaa-bfdb-30a72acf0757"
 EXPO_ACCOUNT = "journeydeck"
 TZ = "America/Chicago"
