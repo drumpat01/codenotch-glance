@@ -29,7 +29,7 @@ test('missing source shows a dash and every row has all fields', () => {
   const c = buildContent({ ex: { used: 53, at: '2026-10-26T22:44:27Z', money: '$24 of $45' } }, tz, now);
   assert.equal(c.muse_pct, '—');
   assert.equal(c.ex_money, '$24 of $45');
-  for (const k of ['cs', 'cw', 'codex', 'cursor', 'grok', 'ex', 'muse']) {
+  for (const k of ['cs', 'cw', 'codex', 'cursor', 'grok', 'ex', 'ms', 'muse']) {
     for (const f of ['pct', 'at', 'date', 'cells', 'ring', 'level']) assert.ok(`${k}_${f}` in c, `${k}_${f}`);
   }
 });
