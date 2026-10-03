@@ -5,7 +5,7 @@ workers_dev = true
 
 # Hourly, on the hour. Quiet hours are not needed: nothing runs on a PC any more.
 [triggers]
-crons = ["0 * * * *"]
+crons = ["*/15 * * * *"]
 
 [[kv_namespaces]]
 binding = "STATE"

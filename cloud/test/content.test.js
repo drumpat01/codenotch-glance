@@ -33,3 +33,15 @@ test('missing source shows a dash and every row has all fields', () => {
     for (const f of ['pct', 'at', 'date', 'cells', 'ring', 'level']) assert.ok(`${k}_${f}` in c, `${k}_${f}`);
   }
 });
+
+import { stateRows } from '../src/worker.js';
+
+test('/state zeroes a window whose reset passed and keeps extras', () => {
+  const r = stateRows({
+    cs: { used: 13, at: '2026-10-02T17:59:00Z' },
+    cursor: { used: 6, at: '2026-10-22T02:49:44Z', api: 5 },
+  }, new Date('2026-10-02T22:46:00Z'));
+  assert.deepEqual(r.cs, { used: 0, at: null, stale: true });
+  assert.equal(r.cursor.api, 5);
+  assert.equal(r.muse, undefined);
+});
