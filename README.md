@@ -47,6 +47,8 @@ It shows whichever AI tools Codenotch tracks for you (Claude, Codex, Cursor, Gro
 
 ## Cloud edition: one large widget, no computer needed
 
+<p align="center"><img src="docs/widget-large.png" alt="The large Codenotch Limits widget on an iPhone Home Screen: Claude session and weekly, Codex, Cursor, GrokBot, Expo and Muse session and weekly, each with a bar and reset time" width="420"></p>
+
 The `cloud/` folder is a second way to run this: a **Cloudflare Worker** reads your usage straight from each provider every hour and pushes **one large Glance widget** with eight rows. Nothing runs on your computer, and your usage keeps updating when it is off.
 
 | Row | Source | Credential the Worker holds |
