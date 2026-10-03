@@ -3,7 +3,7 @@ name: Codex relay
 # a few minutes before the Worker's hourly push.
 on:
   schedule:
-    - cron: '55 * * * *'
+    - cron: '5,20,35,50 * * * *'
   workflow_dispatch:
 permissions: {}
 jobs:

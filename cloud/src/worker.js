@@ -11,8 +11,9 @@ const CODEX_CLIENT_ID = 'app_EMoamEEZ73f0CkXaXp7hrann';
 const ROWS = ['cs', 'cw', 'codex', 'cursor', 'grok', 'ex', 'ms', 'muse'];
 
 export default {
-  async scheduled(_event, env, ctx) {
-    ctx.waitUntil(run(env));
+  // Runs every 15 minutes to keep /state fresh; Glance is only pushed once an hour (its update quota).
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(run(env, false, new Date(event.scheduledTime).getUTCMinutes() < 15));
   },
   // Manual trigger: GET /run?key=RUN_KEY (add &print=1 to see the payload without sending).
   async fetch(req, env) {
@@ -33,6 +34,12 @@ export default {
       }
       return new Response('Not found', { status: 404 });
     }
+    // Read-only usage numbers for the Codenotch desktop app: GET /state with Authorization: Bearer STATE_KEY.
+    if (url.pathname === '/state') {
+      if (!env.STATE_KEY || req.headers.get('Authorization') !== `Bearer ${env.STATE_KEY}`) return new Response('Not found', { status: 404 });
+      const [last, log] = await Promise.all([env.STATE.get('last', 'json'), env.STATE.get('log', 'json')]);
+      return Response.json({ updated: log?.at || null, rows: stateRows(last || {}) });
+    }
     if (url.pathname !== '/run' || !env.RUN_KEY || url.searchParams.get('key') !== env.RUN_KEY) {
       return new Response('Not found', { status: 404 });
     }
@@ -41,7 +48,18 @@ export default {
   },
 };
 
-export async function run(env, printOnly = false) {
+// Rows as the desktop app wants them: a window whose reset has already passed is stale, so it reads 0% with no reset.
+export function stateRows(rows, now = new Date()) {
+  const out = {};
+  for (const k of ROWS) {
+    const r = rows[k];
+    if (!r) continue;
+    out[k] = r.at && new Date(r.at) <= now ? { ...r, used: 0, at: null, stale: true } : r;
+  }
+  return out;
+}
+
+export async function run(env, printOnly = false, push = true) {
   const last = (await env.STATE.get('last', 'json')) || {};
   const errors = {};
   const rows = {};
@@ -62,6 +80,10 @@ export async function run(env, printOnly = false) {
 
   const content = buildContent(rows, env.TZ || 'America/Chicago');
   if (printOnly) return { errors, content };
+  if (!push) {
+    await env.STATE.put('log', JSON.stringify({ at: new Date().toISOString(), status: 'cached', errors }));
+    return { status: 'cached', errors };
+  }
   const res = await fetch(`https://glance-api.fly.dev/ingest/${env.GLANCE_FEED_ID}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${env.GLANCE_WRITE_KEY}`, 'Content-Type': 'application/json' },
@@ -141,7 +163,8 @@ async function cursorRows(env) {
   ]);
   if (!s.ok) throw new Error(`cursor usage ${s.status}`);
   const sj = await s.json();
-  const out = { cursor: row(sj.individualUsage?.plan?.totalPercentUsed, sj.billingCycleEnd) };
+  const plan = sj.individualUsage?.plan;
+  const out = { cursor: row(plan?.totalPercentUsed, sj.billingCycleEnd, { api: pct(plan?.apiPercentUsed) }) };
   if (g.ok) { const gj = await g.json(); out.grok = row(gj.usagePercent, gj.nextResetTimestampUtc); }
   return out;
 }

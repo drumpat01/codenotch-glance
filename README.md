@@ -64,6 +64,8 @@ Tapping the widget flips between bars and a two-row rings view. A source that fa
 
 **Why the relay:** chatgpt.com answers `403` to requests from Cloudflare. A small GitHub Actions job (`.github/workflows/codex-relay.yml`, runs at :55) fetches the Worker's Codex token, reads usage from GitHub's network and posts the weekly window back to the Worker, which uses it on the hour.
 
+**Desktop app (Codenotch for Windows):** the Worker also serves a read-only `GET /state` (guarded by its own `STATE_KEY` secret, `Authorization: Bearer <key>`) with the same numbers. Point the app at it with `cloud_url` and `cloud_key` in `%APPDATA%codenotchconfig.json`; it then reads Claude, Codex, Cursor, Grok Bot, Expo and Muse from the cloud instead of each local sign-in. The Worker refreshes every 15 minutes and pushes the Glance widget once an hour.
+
 **Needs:** a Glance **Pro** plan (the layout uses grids, charts and views), a free Cloudflare account, a GitHub account, Node.js, and your own Claude, ChatGPT/Codex and (optionally) Cursor, Expo and Muse accounts. Hourly updates use exactly the free plan's 24 per day.
 
 ### Instructions for an AI assistant (setting this up for a new user)
