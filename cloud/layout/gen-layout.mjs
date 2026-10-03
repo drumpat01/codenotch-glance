@@ -9,7 +9,8 @@ const ROWS = [
   { k: 'cursor', name: 'Cursor', short: 'Cursor', color: '#8E8CFF', logo: `${CDN}/cursor.png` },
   { k: 'grok', name: 'GrokBot', short: 'GrokBot', color: '#64D2FF', logo: 'https://cdn.jsdelivr.net/gh/drumpat01/glance-assets@d8d2efe15c9bd6d131ebc70cca13fc7fa4f39320/grokbot.png' },
   { k: 'ex', name: 'Expo', short: 'Expo', color: '#E5E5EA', logo: 'https://cdn.jsdelivr.net/gh/drumpat01/glance-assets@9a2a0b5948fa82612e15525451c256378358ce91/expo-white.png', money: true },
-  { k: 'muse', name: 'Muse', short: 'Muse', color: '#0A84FF', logo: `${CDN}/meta-color.png` },
+  { k: 'ms', name: 'Muse session', short: 'Muse 5h', color: '#0A84FF', logo: `${CDN}/meta-color.png` },
+  { k: 'muse', name: 'Muse weekly', short: 'Muse wk', color: '#0A84FF', logo: `${CDN}/meta-color.png` },
 ];
 const BG = '#0E0E10', TRACK = '#2C2C2E', GREY = '#8E8E93', DIM = '#636366';
 const warn = (from, base) => ({ else: '#FF453A', from, when: [{ lt: 1, value: TRACK }, { lt: 70, value: base }, { lt: 90, value: '#FF9F0A' }] });
@@ -27,8 +28,7 @@ const barRow = (r) => ({
           id: `${r.k}_line`, type: 'container', layout: 'horizontal', style: { spacing: 4, alignment: 'center' },
           children: [
             text(`${r.k}_name`, r.name, { color: '#FFFFFF', fontSize: 12, fontWeight: 'semibold' }),
-            text(`${r.k}_pct`, r.money ? '{{ex_money}}' : `{{${r.k}_pct}}`, { color: GREY, fontSize: 12 }),
-            spacer(`${r.k}_sp`),
+            text(`${r.k}_pct`, r.money ? '{{ex_money}}' : `{{${r.k}_pct}}`, { color: GREY, fontSize: 12, flex: 1 }),
             { id: `${r.k}_at`, type: 'relative_time', binding: `{{${r.k}_at}}`, style: { color: GREY, fontSize: 11 } },
             text(`${r.k}_date`, `{{${r.k}_date}}`, { color: DIM, fontSize: 11 }),
           ],
@@ -44,7 +44,7 @@ const barRow = (r) => ({
 
 const home = {
   id: 'root', type: 'container', layout: 'vertical', action: { type: 'set_view', view: 'rings' },
-  style: { padding: 16, spacing: 11, alignment: 'leading', background: BG },
+  style: { padding: 16, spacing: 9, alignment: 'leading', background: BG },
   children: [
     {
       id: 'hdr', type: 'container', layout: 'horizontal', style: { spacing: 6, alignment: 'center' },

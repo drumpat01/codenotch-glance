@@ -8,7 +8,7 @@
 
 const CLAUDE_CLIENT_ID = '9d1c250a-e61b-44d9-88ed-5944d1962f5e';
 const CODEX_CLIENT_ID = 'app_EMoamEEZ73f0CkXaXp7hrann';
-const ROWS = ['cs', 'cw', 'codex', 'cursor', 'grok', 'ex', 'muse'];
+const ROWS = ['cs', 'cw', 'codex', 'cursor', 'grok', 'ex', 'ms', 'muse'];
 
 export default {
   async scheduled(_event, env, ctx) {
@@ -50,7 +50,7 @@ export async function run(env, printOnly = false) {
     codex: async () => ({ codex: await codexRow(env) }),
     cursor: async () => cursorRows(env),
     ex: async () => ({ ex: await expoRow(env) }),
-    muse: async () => ({ muse: await museRow(env) }),
+    muse: async () => (await museRow(env)) || {},
   };
   await Promise.all(Object.entries(sources).map(async ([name, fn]) => {
     try { Object.assign(rows, await fn()); }
@@ -186,9 +186,10 @@ async function museRow(env) {
   if (!m) throw new Error('muse: no subscription_usage event (pay-as-you-go key?)');
   const u = JSON.parse(m[1]);
   // {"subscription":{"weekly":{"used_percent":0,"resets_at":1791158400},"window":{...}}}; resets_at is Unix seconds.
-  const w = u.subscription?.weekly || u.weekly;
-  const at = typeof w?.resets_at === 'number' ? w.resets_at * 1000 : w?.resets_at;
-  return row(w?.used_percent, at);
+  const s = u.subscription || u;
+  const win = (w) => row(w?.used_percent, typeof w?.resets_at === 'number' ? w.resets_at * 1000 : w?.resets_at);
+  // ms = 5-hour window (like Claude session), muse = weekly.
+  return { ms: win(s.window), muse: win(s.weekly) };
 }
 
 // ---------- OAuth: the Worker's own login, refreshed a few minutes before expiry ----------
